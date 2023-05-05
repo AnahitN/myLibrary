@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
-@WebFilter(urlPatterns = {"/removeAuthor","/removeBook", "/updateAuthor", "/updateBook"})
+@WebFilter(urlPatterns = {"/removeAuthor","/removeBook", "/updateAuthor", "/updateBook","/createAuthor"})
 public class AdminFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {

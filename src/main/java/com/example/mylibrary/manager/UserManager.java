@@ -1,10 +1,13 @@
 package com.example.mylibrary.manager;
 
 import com.example.mylibrary.db.DBConnectionProvider;
+import com.example.mylibrary.model.Author;
 import com.example.mylibrary.model.User;
 import com.example.mylibrary.model.UserType;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserManager {
     private static Connection connection = DBConnectionProvider.getInstance().getConnection();
@@ -66,5 +69,31 @@ public class UserManager {
                 .password(resultSet.getString("password"))
                 .userType(UserType.valueOf(resultSet.getString("type")))
                 .build();
+    }
+    public User getByID (int id) {
+        try (Statement statement = connection.createStatement()){
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM user WHERE id = " + id);
+            if (resultSet.next()) {
+                return getUserFromResultSet(resultSet);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    public List<User> getAll() {
+        List<User> users = new ArrayList<>();
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM user");
+            while (resultSet.next()) {
+                users.add(getUserFromResultSet(resultSet));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 }

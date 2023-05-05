@@ -15,12 +15,19 @@
 </head>
 <%List<Book> books = (List<Book>) request.getAttribute("books");
     User user = (User) session.getAttribute("user");
+    String keyword = request.getParameter("keyword") == null ||
+            request.getParameter("keyword").equals("null") ? "" : request.getParameter("keyword");
 %>
 <body style="background-image: url('../img/books-and-plants-beige-aesthetic-desktop-collage-qv7xdjmtlwzuvh66.jpg')">
 <a href="/">Back</a>
 <h2 style="color: saddlebrown">Books</h2> <a href="/createBook">CreateBook</a>
+<form action="/books" method="get">
+    <input type="text" name="keyword" value="<%=keyword%>">
+    <input type="submit" value="search">
+</form>
 <table border="1" style="background-color: bisque">
     <tr>
+        <th>image</th>
         <th>id</th>
         <th>title</th>
         <th>description</th>
@@ -33,6 +40,10 @@
     <%if (books != null && !books.isEmpty()){%>
     <%for (Book book : books) {%>
     <tr>
+        <td><%if (book.getPicName() == null){%>
+            <img src="/img/book.png" width="100">
+            <%} else {%>
+            <a href="/getImage?picName=<%=book.getPicName()%>"> <img src="/getImage?picName=<%=book.getPicName()%>" width="100"></a></td> <%}%>
         <td><%=book.getId()%></td>
         <td><%=book.getTitle()%></td>
         <td><%=book.getDescription()%></td>
@@ -47,9 +58,6 @@
     <%}%>
     <%}%>
 </table>
-<form action="/search" method="post">
-    <input type="search" value="search">
-    <input type="submit" value="submit">
-</form>
+
 </body>
 </html>

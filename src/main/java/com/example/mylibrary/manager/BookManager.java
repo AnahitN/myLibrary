@@ -2,6 +2,7 @@ package com.example.mylibrary.manager;
 
 import com.example.mylibrary.db.DBConnectionProvider;
 import com.example.mylibrary.model.Book;
+import com.example.mylibrary.model.User;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -9,15 +10,18 @@ import java.util.List;
 
 public class BookManager {
     private static Connection connection = DBConnectionProvider.getInstance().getConnection();
-    private AuthorManager authorManager = new AuthorManager();
+    private  static AuthorManager authorManager = new AuthorManager();
+    private static UserManager userManager = new UserManager();
 
     public void save(Book book) {
-        String sql = "INSERT INTO book (title,description,price,author_id) VALUES (?,?,?,?)";
+        String sql = "INSERT INTO book (title,description,price,pic_name,author_id,user_id) VALUES (?,?,?,?,?,?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, book.getTitle());
             ps.setString(2, book.getDescription());
             ps.setInt(3, book.getPrice());
-            ps.setInt(4, book.getAuthor().getId());
+            ps.setString(4,book.getPicName());
+            ps.setInt(5, book.getAuthor().getId());
+            ps.setInt(6,book.getUser().getId());
             ps.executeUpdate();
             ResultSet generatedKeys = ps.getGeneratedKeys();
             if (generatedKeys.next()) {
@@ -47,12 +51,34 @@ public class BookManager {
     }
 
     public static void update(Book book) {
-        String sql = "UPDATE book SET title = ?, description = ?, price =? WHERE id = ?";
+        String sql = "UPDATE book SET title = ?, description = ?, price = ?, author_id = ?,user_id = ? ,pic_name = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.executeUpdate(String.format(sql, book.getTitle(), book.getDescription(), book.getPrice(), book.getId()));
+            ps.setString(1,book.getTitle());
+            ps.setString(2,book.getDescription());
+            ps.setInt(3,book.getPrice());
+            ps.setInt(4,book.getAuthor().getId());
+            ps.setInt(5,book.getUser().getId());
+            ps.setString(6,book.getPicName());
+            ps.setInt(7,book.getId());
+            ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    public static  List<Book> getByUser(User user){
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT * FROM book WHERE user_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)){
+            ps.setInt(1,user.getId());
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                Book book = getBookFromResultSet(resultSet);
+                books.add(book);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return books;
     }
 
     public Book getById(int id) {
@@ -67,14 +93,17 @@ public class BookManager {
         return null;
     }
 
-    private Book getBookFromResultSet(ResultSet resultSet) throws SQLException {
+    private  static Book getBookFromResultSet(ResultSet resultSet) throws SQLException {
         Book book = new Book();
         book.setId(resultSet.getInt("id"));
         book.setTitle(resultSet.getString("title"));
         book.setDescription(resultSet.getString("description"));
         book.setPrice(resultSet.getInt("price"));
+        book.setPicName(resultSet.getString("pic_name"));
         int authorId = resultSet.getInt("author_id");
         book.setAuthor(authorManager.getByID(authorId));
+        int userId = resultSet.getInt("user_id");
+        book.setUser(userManager.getByID(userId));
         return book;
     }
 
@@ -90,9 +119,11 @@ public class BookManager {
 
     public List<Book> bookSearch(String keyword) {
         List<Book> books = new ArrayList<>();
-        for (Book book : books) {
-            String sql = "SELECT * FROM book WHERE title LIKE '%" + book.getTitle() + "%'";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            try  {
+                String sql = "SELECT * FROM book WHERE title LIKE ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                keyword = "%" + keyword + "%";
                 preparedStatement.setString(1, keyword);
                 ResultSet resultSet = preparedStatement.executeQuery();
                 while (resultSet.next()) {
@@ -101,7 +132,6 @@ public class BookManager {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-        }
         return books;
 
     }

@@ -18,7 +18,10 @@ User user = (User) session.getAttribute("user");
 %>
 <body style="background-image: url('../img/books-and-plants-beige-aesthetic-desktop-collage-qv7xdjmtlwzuvh66.jpg')">
 <a href="/">Back</a>
-<h2 style="margin: 0 auto">Authors</h2> <a href="/createAuthor">Create Author</a>
+<h2 style="margin: 0 auto">Authors</h2>
+<%if (user.getUserType() == UserType.ADMIN){%>
+<a href="/createAuthor">Create Author</a>
+<%}%>
 <table border="1" style="background-color: bisque">
     <tr>
         <th>id</th>

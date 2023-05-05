@@ -9,7 +9,7 @@ import java.util.List;
 
 public class AuthorManager {
     private static Connection connection = DBConnectionProvider.getInstance().getConnection();
-    public static void save(Author author) {
+    public static void  save(Author author) {
         String sql = "INSERT INTO author(name,surname,email,age) VALUES(?,?,?,?)";
         try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, author.getName());
@@ -31,7 +31,12 @@ public class AuthorManager {
     public static void update(Author author) {
         String sql = "UPDATE author SET name= ?, surname = ?, email = ?, age = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.executeUpdate(String.format(sql, author.getName(), author.getSurname(), author.getEmail(), author.getAge(), author.getId()));
+           ps.setString(1,author.getName());
+           ps.setString(2,author.getSurname());
+           ps.setString(3,author.getEmail());
+           ps.setInt(4,author.getAge());
+           ps.setInt(5,author.getId());
+           ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
